@@ -1,0 +1,61 @@
+digraph G {
+	compound=true
+	archive_Shortcut -> archive_Folder
+	archive_Shortcut -> archive_File
+	archive_File -> archive_Folder
+	archive_File -> archive_Label
+	archive_File -> Person
+	archive_Document -> archive_Archive
+	archive_Document -> Person
+	archive_Document -> Changelog
+	archive_Document -> Person
+	archive_Document -> archive_File
+	archive_Document -> archive_File
+	archive_FileVersion -> archive_File
+	archive_FileVersion -> Person
+	archive_Folder -> archive_Document
+	archive_Folder -> event_Event
+	archive_Folder -> Changelog
+	archive_Category -> archive_Label
+	archive_Archive -> Team
+	archive_Archive -> archive_Label
+	archive_Archive -> archive_Category
+	archive_Email -> Person
+	archive_Email -> archive_File
+	subgraph cluster_archive {
+		label=archive
+		archive_Shortcut [label=Shortcut]
+		archive_File [label=File]
+		archive_Label [label=Label]
+		archive_Document [label=Document]
+		archive_FileVersion [label=FileVersion]
+		archive_Folder [label=Folder]
+		archive_Category [label=Category]
+		archive_Archive [label=Archive]
+		archive_Email [label=Email]
+	}
+	Person [label=Person]
+	Person -> company_Company
+	Person -> address
+	company_Collaboration -> company_Company
+	company_Collaboration -> company_Company
+	company_Collaboration -> Person
+	company_Collaboration -> Changelog
+	company_CompanyRepresentative -> company_Company
+	company_ContactReport -> Person
+	company_ContactReport -> company_Collaboration
+	company_ContactReport -> company_CompanyRepresentative
+	company_ContactReport -> archive_File
+	company_ContactReport -> Changelog
+	company_Report -> Person
+	company_Company -> Person
+	subgraph cluster_company {
+		label=company
+		company_Collaboration [label=Collaboration]
+		company_CompanyRepresentative [label=CompanyRepresentative]
+		company_ContactReport [label=ContactReport]
+		company_Report [label=Report]
+		company_Company [label=Company]
+		company_Contact [label=Contact]
+	}
+}

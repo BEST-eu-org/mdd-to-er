@@ -1,0 +1,37 @@
+digraph G {
+	compound=true
+	archive [label=archive]
+	archive [label=archive]
+	archive -> Person
+	archive [label=archive]
+	archive [label=archive]
+	archive -> Person
+	archive -> Changelog
+	archive -> Person
+	archive [label=archive]
+	archive -> Person
+	archive [label=archive]
+	archive -> event
+	archive -> Changelog
+	archive [label=archive]
+	archive [label=archive]
+	archive -> Team
+	archive [label=archive]
+	archive -> Person
+	Person [label=Person]
+	Person -> company
+	Person -> address
+	company [label=company]
+	company -> Person
+	company -> Changelog
+	company [label=company]
+	company [label=company]
+	company -> Person
+	company -> archive
+	company -> Changelog
+	company [label=company]
+	company -> Person
+	company [label=company]
+	company -> Person
+	company [label=company]
+}

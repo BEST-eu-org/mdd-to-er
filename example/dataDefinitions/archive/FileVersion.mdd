@@ -1,0 +1,4 @@
+file = ptr archive.File
+changelog = text
+submittedBy = ptr Person
+submittedOn = date

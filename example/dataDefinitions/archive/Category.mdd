@@ -1,0 +1,5 @@
+#$Id$
+#archive.Category
+
+name = unique not null char[100]
+labels = set archive.Label

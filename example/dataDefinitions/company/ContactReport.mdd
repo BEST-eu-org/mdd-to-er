@@ -1,0 +1,24 @@
+# company.ContactReport
+# $Id$
+
+title=not null char[40]  ; short description
+contactDate = date  ; date when the contact happened
+
+report=text  ; the report
+submittedBy = ptr Person
+
+collaboration=set company.Collaboration
+
+companyRepresentative = set company.CompanyRepresentative  ; people the contact was with
+
+type= int {"Meeting"=10,"Online meeting"=15,"Phonecall"=20,"E-mail"=30,"Post"=40,"History"=41, "Other"=50}	
+
+attachment= set archive.File;
+
+# Status of approach by finTeam
+status= int {"New"=0, "Assigned"=5,"First Contact"=10,"Reminder sent"=15,"Offer done"=20,"Not interested"=30,"Maybe interest later on"=40,"Final arrangements"=50, "Project Partner"=58, "University Partner"=59, "Supporter"=60, "Career Support Partner"=61, "Corporate Partner"=62, "Sponsor GM"=63, "Other cooperation"=64, "Not interesting for fT"=70, "LBG partner - new"=80 ,"LBG partner - in process"=82 , "LBG partner - account created"=84 , "LBG partner - access granted"=86 , "LBG partner - inactive"=88}
+
+actionStatus= int {"Planned"=10, "Report"=30} ; the action is going to happen, or it's finished already
+
+changeLog=set
+changeLog->!include=Changelog

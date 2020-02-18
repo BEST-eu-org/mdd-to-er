@@ -1,0 +1,4 @@
+#$Id$
+#archive.Label
+
+name = unique not null char[100]

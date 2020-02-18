@@ -1,0 +1,84 @@
+#archive.Folder
+
+title = not null not empty char[250]		                        
+!title = title
+
+document = ptr archive.Document ;pointer to original Document the folder was from in May 2012
+
+archive = not null ptr archive.Archive   
+parent = ptr archive.Folder
+
+description = text
+
+events = set event.Event
+
+changeLog=set
+changeLog->!include=Changelog
+
+officialType = int {"Not-Official"=0, "Event"=5, "VIP"=10 } ; official folder type
+
+# custom access right for the folder in case it's not following the access rights of the archive
+accessRightsView = int {"Members"=20, "Team"=30 }
+accessRightsEdit = int {"Members"=20, "Team"=30, "Coordinator/Admin"=40 }
+accessRightsDelete = int {"Members"=20, "Team"=30, "Coordinator/Admin"=40 }
+
+# integrity constraints (Error adding unique key for archive.Folder on fields [title, parent]: Duplicate entry 'BKT - opoly-1862272077' for key 2)
+#unique(parent.name, title) : "Names inside a folder must be unique"
+
+
+# ---------------------- MDD functions ------------------------
+getPath() { 
+  CASE WHEN (parent <> nil) 
+    THEN CASE WHEN (parent.parent <> nil)
+      THEN concat(archive.name, '/', parent.parent.title, '/', parent.title, '/', title)
+      ELSE concat(archive.name, '/', parent.title, '/', title) END
+  ELSE concat(archive.name, '/', title) END
+} # limited to 3 levels of folders
+
+isOfficial() {
+  CASE WHEN (archive.type = 10)
+    THEN true
+    ELSE false END
+} #returns true if the folder is in an official archive
+
+isArchiveDefaultAccess(){
+  CASE WHEN (accessRightsView = nil) 
+    THEN CASE WHEN (parent <> nil)
+      THEN CASE WHEN (parent.accessRightsView = nil)
+        THEN true
+      ELSE false END
+    ELSE true END
+  ELSE false END
+}
+isParentAccessRights(){
+  CASE WHEN (accessRightsView = nil) 
+    THEN CASE WHEN (parent <> nil)
+      THEN CASE WHEN (parent.accessRightsView <> nil)
+        THEN true
+      ELSE false END
+    ELSE false END
+  ELSE false END
+}
+getAccessRightsView() {
+  CASE WHEN (accessRightsView = nil)
+    THEN CASE WHEN (parent.accessRightsView <> nil)
+      THEN parent.accessRightsView
+      ELSE archive.accessRightsView END
+  ELSE accessRightsView END
+} # returns either view right of folder, it's parent, or the archive
+
+getAccessRightsEdit() {
+  CASE WHEN (accessRightsEdit = nil)
+    THEN CASE WHEN (parent.accessRightsEdit <> nil)
+      THEN parent.accessRightsEdit
+      ELSE archive.accessRightsEdit END
+  ELSE accessRightsEdit END
+} # returns either edit right of folder, it's parent, or the archive
+
+getAccessRightsDelete() {
+  CASE WHEN (accessRightsDelete = nil)
+    THEN CASE WHEN (parent.accessRightsDelete <> nil)
+      THEN parent.accessRightsDelete
+      ELSE archive.accessRightsDelete END
+  ELSE accessRightsDelete END
+} # returns either delete right of folder, it's parent, or the archive

@@ -1,0 +1,14 @@
+# company.Company
+# $Id$
+
+company= ptr company.Company
+
+obligations=set
+	obligations->company= ptr company.Company
+	obligations->endDate = date
+	obligations->responsible = ptr Person
+	obligations->description = text
+	obligations->status = int {"Open"=10, "Fulfilled"=20, "Cancelled"=30}
+	
+changeLog=set 
+changeLog->!include=Changelog

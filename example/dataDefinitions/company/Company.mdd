@@ -1,0 +1,42 @@
+# company.Company
+# $Id$
+
+name=not null char[80]		                ;Official company name
+colloquialName=char[100]			;the almost official name
+aliases=char[255]				;all other possible names
+
+comment=text  ; comments about the company
+
+employerType=int {"Company"=0,"University"=10,"Government"=20,"Non-profit"=30,"Foundation"=40,"Other"=50}
+
+url=char[80]		                ;home page
+logourl=char[200]	                ;URL of the logo
+email=char[100]
+
+# check if the url starts with http:// (or https://) or is empty. 
+matches(url) { (https?:\/\/.*)? } : "the url must start with http:// or https://"
+
+scale=int{"local"=10, "country"=20, "regional"=30, "Europe"=40, "worldwide"=50} ; 
+
+type = int{"LBG"=10, "Int. level"=20}
+motherCompany = ptr company.Company
+
+resp = ptr Person  ; Contact person in finTeam
+
+creationMethod=int{"Manual"=0, "Spreadsheet"=10 }
+
+#####################################################################
+# PREVIOUS BANK FORMAT, still used in finTeam cpy DB
+# bank account
+bankname=char[50]; Name
+bankstreetno= char[80]; Street
+bankcity= char[80]; City
+bankzipcode= char[80]; Zipcode
+bankiban= char[30]; IBAN code
+bankbic= char[30]; BIC code
+
+# PREVIOUS ADDRESS FORMAT, still used in finTeam cpy DB
+hqstreet=char[100]	                ;Street
+hqno=char[100]	                        ;Number
+hqzipcode=char[10]		        ;Zipcode
+hqcity=char[40]		                ;City

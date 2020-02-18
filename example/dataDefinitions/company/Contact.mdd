@@ -1,0 +1,29 @@
+# $Id$
+
+surname=not null char[40]         ;Family Name
+name=not null char[40]            ;First Name
+email=char[100]		 ;E-Mail
+email2=char[100]	 ; optional 2nd e-Mail address
+gender=int{"Male"=0,"Female"=1}	 ;Gender
+mobilePhone=char[20]     ;Mobile phone
+function= char[50]       ; function in the company
+
+# Working address  
+streetno=char[100]	      ;Street
+zipcode=char[10]		;Zipcode
+city=char[40]		;City
+phone=char[20]		;Phone
+fax=char[20]			;Fax
+
+# current company the person is working for
+company= not null ptr company.Company
+
+# Status of contact person
+status= int {"Normal contact"=0,"Main contact"=10,"Old contact"=20}	
+
+# comments about this person :-)
+comment=text		 ;Comments
+
+# english level of this person
+englishLevel=int{"Can communicate in English without problems"=1, "Has minor problems in communicating in English"=2, "Has major problems in communicating in English"=3 }
+

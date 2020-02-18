@@ -1,0 +1,83 @@
+#$Id$
+#archive.Email
+
+# ------- FROM field ---------
+
+fromText=fixed not null char[255]     ;the simple text FROM filed of the email header
+fromPerson= ptr Person        ;identified person  
+fromUnidentified = char[255]					;unidentified Sender			
+
+replyToEmailAddress=fixed char[200]               ;reply-to email address
+
+
+# ------- TO field ---------
+# we can show in different ways the TO emails 
+
+toText = fixed not null text    ;the simple text To field of the email header
+toPersons = set Person  ;identified persons  in the ToText filed
+toUnidentified = text          ;(yet) unidentified email address, not associated with persons nor with team
+#toUnidentified = set          
+#	toUnidentified->email = char[255]
+
+# ------- CC field ---------
+# we can show in different ways the CC emails
+
+ccText = fixed text     ;the simple text CC filed of the email header
+ccPersons = set Person   ;identified persons  in the CCText filed
+ccUnidentified= text             ;(yet) unidentified email address, not associated with persons nor with team
+#ccUnidentified = set          	 
+#	ccUnidentified->email = char[255]
+
+# this is a redundant field that combines the pointers from toTeams & ccTeams in one set.
+# this allows searching on the to&ccTeams w/o excluding mails that have neither toTeams or ccTeams set
+
+
+sendingDate=fixed not null date                    ;date of the email as registered by the mail system
+subject=text		    ;Email Subject
+
+# spam level, using spam-assasins "X-Spam-Level" header, given the spam level as one '*' per point
+spamLevel=real; using real in case we want to have more precision later on
+
+# ----- Content ------
+content=not null ptr
+  content->text=text
+  content->html=text
+contentLength=int
+
+charset=char[100]
+
+originalMail = ptr 	;the original mail, put into an extra table
+  originalMail->text=text
+
+# ----- Info for uniqueness & threading -----
+messageId = fixed not null text               ;mail Id as given by the email system, might replace the primary key
+inReplyToMessage = ptr archive.Email
+threadRoot = ptr archive.Email ; ptr to the first email in the thread
+
+# ordering by the thread path and indenting by the threadLevel will give a threaded view
+threadPath = text ; redundant field, contains all previous pointers for this mail in this thread
+threadLevel = int ; redundant field, computed as inReplyToMessage.threadLevel + 1
+
+inReplyTo = fixed text      ;mail Id of the email replied to (previous in the conversation thread), not set by all mail clients
+threadTopic = fixed char[255]  ;header sent by MS outlook
+threadIndex = fixed char[255]  ;header sent by MS outlook
+threadIndexDecoded = char[255]  ;header sent by MS outlook
+# maybe other fields are needed for different mail clients
+
+# ------- extra features ----
+
+# tag the email to allow e.g. searching, highlighting 
+mailType = int {"Normal"=10, "Starred"=20, "Summary"=30, "To-Do"=40, "Availability"=50, "Fun"=60}
+
+hidden = int{"No"=0,"Yes"=1}	;message "deleted" from the archive (we only hide to prevent re-imports)
+
+# -------- attachments ----------
+
+hasAttachments = int{"No"=0,"Yes"=1}	;redundant information to allow better search on that criterion
+attachedFiles = set archive.File	;also stores attached emails as .eml files
+
+#attachedEmails = set archive.Email ; if one at some point decides to parse attached emails recursively, this field would be needed
+#attachedEmailRoot = ptr archive.Email ; analogous to threadRoot, but for attached emails
+#attachedEmailParent = ptr archive.Email ; the parent of this attached email, is different from attachedMailRoot if there is attached mails in attached mails
+#attachedEmailLevel = int ; the level of nested attached emails, analogous to threadLevel
+#attachedEmailPath = text ; the path to the roor, analogous to threadPath

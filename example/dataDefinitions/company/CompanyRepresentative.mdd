@@ -1,0 +1,21 @@
+# $Id$
+# Company representative is a misleading name, as this representative is used for companies, university project and BAS teacher
+
+person= unique fixed not null ptr Person
+company= ptr company.Company  ;current company the person is working for
+
+function= text       ; function in the company
+status= int {"Normal contact"=10,"Main contact"=20,"Old contact"=30}  ;Status of contact person
+comment=text		 ;comments about this person :-)
+
+creationMethod=int{"Manual"=0, "Spreadsheet"=10 } ; indicates whether this representative was created via a web-form or imported from e.g. an excel file
+
+# added in August 2006 for BAS teacher
+educationalInvolvement = text ; educational involvement of the representative, e.g. member of SEFI or so
+otherBackgroundInformation = text ; any other background information of the person
+
+specialisationDescription = text ; additional comments to the specialisation(s), e.g. the exact sub-discipline, etc
+
+canInform = int {"no"=0, "yes"=1} ; can we inform this representative about other activities
+
+isBCCAdminAccount = int {"No"=0, "Yes"=1} ; whether this account is used by BCC admins, or not

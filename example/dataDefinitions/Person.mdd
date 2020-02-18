@@ -1,0 +1,109 @@
+#Person<pre>
+#$Id$
+!type.yesNo=int{"No"=0, "Yes"=1}
+!type.blankYesNo=int{""=0, "Yes"=10, "No"=20}
+
+
+# field         | imported from minerva and ...
+#---------------|------------------------------
+# birthdate     | internal
+# passportno    | johnny, internal 
+# gender        | johnny,internal
+# email         | internal
+# webpage       | internal
+# citizenship   | internal
+
+surname=not null char[60]         ;Family Name
+name=not null char[60]            ;First Name
+fullName() { concat(name, ' ', surname) }
+
+# MDD validation checks to see if name or surname contains non-supported characters, can be dropped once there is proper UTF-8 support
+# Works on assumption that non-supported characters are mangled into a question mark or a string containing & sign before validation rule is run
+matches(name) { [^?&]+$ }: "First name contains non-supported special characters, try substituting with English ones"
+matches(surname) { [^?&]+$ }: "Surname contains non-supported special characters, try substituting with English ones"
+
+# Better MDD validation rule, but does not currently work properly on server side
+# With proper UTF-8 support available, the upper limit should be changed from 00ff to 017f, and the error message adjusted
+matches(name) { ^[\u0000-\u00ff]+$ }: "First name contains non-supported special characters, try substituting with English ones"
+matches(surname) { ^[\u0000-\u00ff]+$ }: "Surname contains non-supported special characters, try substituting with English ones"
+
+email=char[100]		 ;E-Mail
+sendingEmail=char[150]	 ;sending E-Mail
+birthdate=date		 ;Birthdate
+gender=int{"Male"=0,"Female"=1}	 ;Gender
+showGender() {
+  CASE WHEN (gender = 0)
+      THEN 'M'
+      ELSE 'F' END  
+}
+passportno=char[80]      ;Passport number
+passportExpdate=date   ; Passport expire date
+mobilePhone=char[200]     ;Mobile phone
+icq=int
+skype=char[40]
+otherContacts=char[200]	;other contacts, like MSN, YAHOO, GaduGadu, GTalk, ..
+webpage=char[200]        ;WWW page
+
+# check if the url starts with http:// (or https://) or is empty. 
+matches(webpage) { (https?:\/\/.*)? } : "the url must start with http:// or https://"
+
+T_shirt=int{"XS"=-1, "S"=0, "M"=1, "L"=2, "XL"=3, "XXL"=4 }
+specialDiet=text; Special diet (vegetarian, vegan, kosher)
+allergies=text 
+maritalStatus = int { "Not set"=0, "Single"=10, "Cohabiting/Engaged"=20, "Married"=30}
+previousSurname = char[40] ; if person changed family name
+children = char [100] ; enter info about your kids (age, hair, eyes color, etc.)
+
+address=set		 ;Addresses
+  address->!title=description
+  address->description=char[30]	;Description (home address, study-time address, ...)
+  address->streetno=char[100]	      ;Street
+  address->zipcode=char[10]		;Zipcode
+  address->city=char[40]		;City
+  address->phone=char[20]		;Phone
+  address->otherphone=char[20]	;Other Phone, mobile if not roaming to usual mobile phone
+  address->fax=char[20]			;Fax
+  address->usage=char[80]		;When to use this address
+  address->latitude=real		;Address latitude in degrees
+  address->longitude=real		;Address longitude in degrees
+
+#to be dropped! Used just to check if old emails can be preserved without it
+middleInitial=char[20]	;Middle initial
+
+employment = set ; where person is working
+  employment->company = ptr company.Company
+  employment->department = char [60] ; Name of the departament, if matters, copy of text company name, if it was not linked to company
+  employment->position = char [250] 
+  employment->startDate = not null date ; start work date
+  employment->endDate = date ; end date in company (empty - current job)
+  employment->emailWork = char [50];
+  employment->url = char[80] ; home page, length as in company.Company.mdd, needed because for Employment companies we fill in only company names
+  employment->!include=address 
+  employment->comments = text ;General comment to the employment
+  employment->canBeContactedFor = blankYesNo
+  employment->recruitedBecauseOf = blankYesNo
+  # check if the url starts with http:// (or https://) or is empty. 
+  employment->matches(url) { (https?:\/\/.*)? } : "the url must start with http:// or https://"
+  #check the start date
+  # checks with static date times don't work with the new MDD parser before makumba 0.9.5
+  # employment->compare(startDate) { startDate >= date(1, 1, 1980, 0, 0, 0) } : "Employment start date can not be before 1980" 
+  # employment->compare(startDate) { startDate < date(1, 1, 2020, 0, 0, 0) } : "Employment start date has to be before 2020" 
+  #check the end date
+  # enable these checks below when using makumba > 0.9.5 (see bug http://trac.makumba.org/ticket/1266)
+  # employment->compare(endDate) { endDate > date(1, 1, 1980, 0, 0, 0) } : "Employment end date has to be after 1980" 
+  # employment->compare(endDate) { endDate < date(1, 1, 2020, 0, 0, 0) } : "Employment end date has to be before 2020" 
+  # employment->compare(startDate, endDate) { startDate < endDate } : "Employment start date should be before the end date" 
+
+# photo, free upload by student. Size limits enforced by Logic.
+photo= unique ptr Image
+photoThumbnail = unique ptr Image
+photoMiniThumbnail = unique ptr Image
+
+# For GDPR: accepted Terms of Use disclaimer when creating the account
+acceptedCreationTerms=yesNo
+# Accepted terms of disclaimers for BAS, BCC and PA
+acceptedBASTerms=yesNo
+acceptedBCCTerms=yesNo
+acceptedPATerms=yesNo
+
+numberOfTimesPersonMet(ptr Person searchPerson) { (SELECT count(ea1) FROM event.Application ea1, event.Application ea2 WHERE ea1.event =  ea2.event AND ea1.applicant=searchPerson AND ea1.event.start < current_date() AND ea2.applicant = this AND searchPerson <> ea2.applicant AND ea2.isParticipant() AND ea1.isParticipant() ) }

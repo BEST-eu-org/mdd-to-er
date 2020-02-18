@@ -1,0 +1,105 @@
+#$Id$
+#archive.File
+
+# this MDD stores only the file meta data (name, type, length...)
+# the actual content is written to the filesystem
+# the file will have the name of this object's external pointer value 
+
+title = not null not empty char[250] ;Title (filename of attachment)
+
+fileDate=date		; date of last modification
+description = text	;Description of the file
+
+parent = ptr archive.Folder
+authors = set Person 
+otherAuthors = char[200]; authors who are not registered in the system   
+status = int {"In progress"=10, "Final"=20, "Outdated"=30}
+tags = set archive.Label
+submittedBy = ptr Person  ; who uploaded the file
+
+downloadCounter = int       ;counts the number of downloads since 01 May 2012
+
+#http://www.freesoft.org/CIE/RFC/1521/4.htm
+#http://www.iana.org/assignments/media-types/
+contentType=char[200]; MIME type and sub_type
+contentLength = int	; Size (in the future this could be a text function)
+
+# --------------- Official documents
+officialNumber = char[100] ;Document Number
+approved = int{"N/A"=2, "No"=0, "Yes"=1, "Withdrawn"=3}
+
+# --------------- VIP documents
+documentVIP = int{"VIP Proposal"=10, "VIP Discussion"=20, "VIP GM proposal"=30, "Other"=40}
+shortDescription = text
+discussionStart = date
+discussionEnd = date
+
+unique(title, parent) : "Names inside a folder must be unique"
+
+# usage: 
+# - starting from 10 --> PA purposes
+# - starting from 500 --> BAS purposes
+usedIn = int {"LBG company DB" = 10, "Email archives"=20, "Archives" = 30, "Competition DB" = 40, "Reimbursement requests" = 50, "LbgApplication budget" = 60, "BAS LBG - Course Information Form" = 510, "BAS Teacher - CV" = 520, "BAS - Course materials" = 530}
+
+# -------- Not used fields ----------------------
+#charset=char[100] ;Character set (eg: ISO-8859-1...)
+
+#convertedContent=ptr ; the contents of the file converted to plain text, if possible
+#convertedContent->text=text 
+#convertedContent->length=int  ; the length of the converted text content
+
+#changelog = text  ; changelog to previous version, for versioned files
+
+# -------- MDD functions ------------------------
+isOfficial() {
+  CASE WHEN (parent <> nil)
+    THEN parent.isOfficial()
+  ELSE false END
+}
+
+# removes leading official number and the file extension
+strippedName() {
+  CASE WHEN (substring(title, 1, 15) = officialNumber)
+    THEN 
+      CASE WHEN (substring(title, 16, 3) = ' - ')
+        THEN 
+          CASE WHEN (substring(title, (character_length(title)-3), 1) = '.' )
+            THEN substring(title, 19, (character_length(title)-22))
+          ELSE 
+            CASE WHEN (substring(title, (character_length(title)-4), 1) = '.' )
+              THEN substring(title, 19, (character_length(title)-23))
+            ELSE substring(title, 19) END
+          END
+      ELSE 
+        CASE WHEN (substring(title, (character_length(title)-3), 1) = '.' )
+          THEN substring(title, 16, (character_length(title)-19)) 
+        ELSE substring(title, 16) END
+      END
+  ELSE 
+    CASE WHEN (substring(title, 7, 15) = officialNumber)
+      THEN 
+        CASE WHEN (substring(title, 22, 3) = ' - ')
+          THEN 
+            CASE WHEN (substring(title, (character_length(title)-3), 1) = '.' )
+              THEN substring(title, 25, (character_length(title)-28))
+            ELSE 
+              CASE WHEN (substring(title, (character_length(title)-4), 1) = '.' )
+                THEN substring(title, 25, (character_length(title)-29))
+              ELSE substring(title, 25) END
+            END
+        ELSE 
+          CASE WHEN (substring(title, (character_length(title)-3), 1) = '.' )
+            THEN substring(title, 24, (character_length(title)-24)) 
+          ELSE substring(title, 24) END
+        END
+    ELSE  
+      CASE WHEN (substring(title, (character_length(title)-3), 1) = '.' )
+        THEN substring(title, 1, (character_length(title)-4))
+      ELSE 
+        CASE WHEN (substring(title, (character_length(title)-4), 1) = '.' )
+          THEN substring(title, 1, (character_length(title)-5)) 
+        ELSE title END
+      END
+    END
+  END
+}

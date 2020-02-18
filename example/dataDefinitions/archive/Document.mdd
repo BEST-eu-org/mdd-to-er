@@ -1,0 +1,79 @@
+#archive.Document
+#$Id$
+#MIME compatible 
+#http://www.freesoft.org/CIE/Topics/128.htm
+
+#!type.accessRights = int {"Everyone"=10, "ies"=20, "Team"=30, "Coordinator/Admin"=40}
+
+# used for "subject" in email, filename in case of attachments
+title=char[250]		;Title
+!title=title
+
+# we allow one document to be in multiple archives
+inArchives = set archive.Archive   ;Archives
+
+
+submittedBy= ptr Person ; who entered the document
+authors= set Person; authors of the document
+authorsChar= char[200]; authors who are not registered in the system
+
+# info about offficial documents
+documentNumber = char[100] ;Document Number
+approved = int{"N/A"=2, "No"=0, "Yes"=1, "Withdrawn"=3}
+
+creationDate=date
+
+specialName = char[100]   ; name in the special archives
+
+shortname = char[100]   ; short name for documents
+description = text
+status = int {"In progress"=10, "Final"=20, "Outdated"=30}
+
+# VIP documents
+documentVIP = int{"No"=0, "Yes - Proposal"=10, "Yes - Discussion"=20, "Yes - GM proposal"=30}
+shortDescription = text
+discussionStart = date
+discussionEnd = date
+
+# custom access rights
+accessRightsView = int {"Members"=20, "Team"=30 }
+accessRightsEdit = int {"Members"=20, "Team"=30, "Coordinator/Admin"=40 }
+accessRightsDelete = int {"Members"=20, "Team"=30, "Coordinator/Admin"=40 }
+
+changeLog=set
+changeLog->!include=Changelog
+
+# comments to the document
+comments = set
+	comments->who = ptr Person
+	comments->when = date
+	comments->comment = text
+	comments->rating = int {"*"=1,"**"=2,"***"=3,"****"=4,"*****"=5}
+	
+category= char[255] ; category within the archive
+expiredOn=date ; date of expiration (used in notes, maybe also after)
+
+# for file-level attachments
+attachments = set
+  attachments->title = char[250]
+  attachments->currentVersion = ptr archive.File
+  attachments->archivedVersions = set archive.File
+
+charset=char[50]; Character set (eg: ISO-8859-1...)
+
+# ++++++++++ redundant fields to generate threaded views easily
+# the level, i.e. the n-th answer to the root; starts with 0
+threadLevel=int
+
+# pointing to itself if root folder, otherwise to the parent folder
+threadRoot=ptr archive.Document
+
+# the path from the thread root to the path, in the form
+# rootDate+rootId, replyToRootDate+replyToRootId, replyToReplyToRootDate+replyToReplyToRootId, ...
+#
+# ordering by the thread path and indenting by the threadLevel will give a threaded view
+threadPath= text
+# +++++++ end of redundant fields
+
+# apparently needed for the file upload
+headers=text ;Headers

@@ -1,0 +1,40 @@
+#archive.Archive<pre>
+#$Id$
+
+!type.accessRights = int {"Members"=20, "Team"=30, "Coordinator/Admin"=40}
+
+name= not null char[200]
+
+description = text
+
+owner = ptr Team
+
+administrators = set Person
+
+type=int{"Official Archives"=10, "Committees"=20, "Departments"=21, "Projects/Working Groups"=30, "Lbg Corner"=40, "Lbg Archive"=50, "Management archive"=60, "Old archive"= 90, "Other"=100}
+
+accessRightsView = accessRights
+accessRightsEdit = accessRights
+accessRightsDelete = accessRights
+accessRightsUpload = accessRights
+
+tags = set
+  tags->tag=ptr archive.Label   ;the name of the tag
+  tags->onlyAdmin=boolean               ;can only an admin use this tag
+
+isOfficial() {
+  CASE WHEN (type = 10)
+    THEN true
+    ELSE false END
+} #returns true if the archive is in an official archive
+
+
+#---------------- fields below will be dropped after DAR ----------------------
+
+categories = set archive.Category
+
+#### Kept for backwards compatibility, can be dropped once archives transferred
+#topics= set Topic; topics proposed for this archive
+access=int{"Public archives - All members"=10, "Working archives - All members view only"=20, "Private Archives - Team members -"=30, "LBG Corner archives - All members"=40}	;Access right
+# for notes checking
+tmp_notesUrl=char[100]

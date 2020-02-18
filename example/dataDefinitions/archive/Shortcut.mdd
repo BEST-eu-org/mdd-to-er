@@ -1,0 +1,9 @@
+#archive.Shortcut
+
+title = char[250] ; not used currently, but could be introduced  later
+
+parent = not null ptr archive.Folder
+
+targetFolder = ptr archive.Folder
+
+targetFile = ptr archive.File
