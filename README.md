@@ -2,15 +2,19 @@
 
 A tool to extract an Entity-Relationship (ER) diagram from Makumba Data Definition (MDD) files.
 
-## Preparation
+![Example image](https://github.com/samupino/mdd-to-er/blob/master/example/example_image.png)
 
-### Requirements
+(See the example for the details)
+
+## Setup
+
+#### Requirements
 
 - Unix operative system
 - Python 3
 - Virtualenv package
 
-### Steps
+#### Steps
 
 1. Create a virtual environment:
 
