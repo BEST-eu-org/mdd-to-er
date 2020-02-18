@@ -7,15 +7,16 @@ class Parser:
 	base_path = ""
 	# file where to write the generated code
 	out_file = None
-
+	# depth limit
+	depth_limit = 10
 
 	# Constructor
-	def __init__(self, base_path, out_file):
+	def __init__(self, base_path, out_file, depth_limit=10):
 		self.base_path = base_path
 		if (self.base_path[-1] == "/"):
 			self.base_path = self.base_path[:-1]
-
 		self.out_file = out_file
+		self.depth_limit = depth_limit
 
 
 	def getGraphName(self):
@@ -47,6 +48,27 @@ class Parser:
 
 
 	# rpa: relative path array (one element per each folder in the relative path from base_path)
+	# returns: the same rpa but without extension it is a file
+	def rpaRemoveExtension(self, rpa):
+		nameAndExtension = rpa[-1].split(".")
+		if (len(nameAndExtension) > 1):
+			name = ".".join(nameAndExtension[:-1])
+			rpa[-1] = name 	# remove extension
+		return rpa
+
+
+	# rpa: relative path array (one element per each folder in the relative path from base_path)
+	# returns: the extension of the rpa point to a file, otherwise None
+	def rpaGetExtension(self, rpa):
+		nameAndExtension = rpa[-1].split(".")
+		if (len(nameAndExtension) > 1):
+			ext = nameAndExtension[-1]
+		else:
+			ext = None
+		return ext
+
+
+	# rpa: relative path array (one element per each folder in the relative path from base_path)
 	# description: 
 	def recursiveSearch(self, rpa=[]):
 
@@ -55,15 +77,37 @@ class Parser:
 			rpa_child.append(filename)
 
 			path = self.rpa2path(rpa_child)
+			depth_level = len(rpa_child)
 			print("Analyzing", path)
 
+			# if it is a directory
 			if (os.path.isdir(path)):
-				self.generateSubgraph(rpa_child)
+
+				if (depth_level < self.depth_limit):
+					self.generateSubgraph(rpa_child)
+
 				self.recursiveSearch(rpa_child)
+			
+			# if it is a file
 			else:
-				extension = path[-4:]
-				if (extension == ".mdd" or extension == ".idd"):
-					self.generateNode(rpa_child)
+				
+				ext = self.rpaGetExtension(rpa_child)
+				if (ext == "mdd" or ext == "idd"):
+
+					# the smallest cluster allowed by the depth limit that contains the child under analysis
+					nearestParent = rpa_child[:self.depth_limit]
+					# generate the node for the nearest parent (multiple nodes will be rendered only once)
+					self.generateNode(self.rpaRemoveExtension(nearestParent))
+					
+					# detect foreign keys in the analyzed file
+					destNodeList = self.getDestinationsList(self.rpaRemoveExtension(rpa_child), ext)
+					# replace each destination with its own nearest parent
+					for idx, destNode in enumerate(destNodeList):
+						if (len(destNode) > self.depth_limit):
+							destNodeList[idx] = destNode[:self.depth_limit]
+					
+					# generate all the edges starting from ne nearest parent
+					self.generateEdges(self.rpaRemoveExtension(nearestParent), destNodeList)
 
 
 	# rpa: relative path array (one element per each folder in the relative path from base_path)
@@ -85,24 +129,29 @@ class Parser:
 	# rpa: relative path array (one element per each folder in the relative path from base_path)
 	# description: 
 	def generateNode(self, rpa):
-
+			
 		ind_lv = len(rpa) - 1						# code indentation level
-		nodeLabel, extension = rpa[-1].split(".")
-		rpa[-1] = nodeLabel							# remove '.mdd' extension
+		nodeLabel = rpa[-1]
 		nodeName = self.rpa2node(rpa)
 		parentName = self.rpa2cluster(rpa[:-1])
-
-		# detect foreign keys in the analyzed file
-		destNodeList = self.getDestinationsList(rpa, extension)
 
 		self.out_file.write("\n")
 		# write instruction to create the node
 		self.out_file.write(("    "*ind_lv) + parentName+".node(name='"+nodeName+"', label='"+nodeLabel+"')\n")
 
+
+	# rpa: relative path array (one element per each folder in the relative path from base_path)
+	# description: 
+	def generateEdges(self, rpa_source, destNodeList):
+
+		ind_lv = len(rpa_source) - 1						# code indentation level
+		nodeName = self.rpa2node(rpa_source)
+		
 		# for each foreign key write an instruction to draw an arrow to it
 		for destNode in destNodeList:
 			destNodeName = self.rpa2node(destNode)
-			self.out_file.write(("    "*ind_lv) + self.rpa2cluster([])+".edge('"+nodeName+"', '"+destNodeName+"')\n")
+			if (nodeName != destNodeName):
+				self.out_file.write(("    "*ind_lv) + self.rpa2cluster([])+".edge('"+nodeName+"', '"+destNodeName+"')\n")
 
 
 	# rpa: relative path array (one element per each folder in the relative path from base_path)
@@ -114,11 +163,6 @@ class Parser:
 		f = open(self.rpa2path(rpa)+"."+extension, "r")
 
 		destinations_list = []
-
-		#ptr_count = 0
-		#set_count = 0
-		#syntax1_count = 0
-		#syntax2_count = 0
 		
 		for line in f.readlines():
 			# remove possible strings
@@ -144,42 +188,24 @@ class Parser:
 				line = line[line.find("ptr")+3:]	# remove all the initial part
 				line = list(filter(None, re.split(" |\t|\n|;.*\n|=", line)))
 				if (len(line) > 0):
-					#syntax1_count += 1
 					destinations_list.append(line[0])
-				#ptr_count += 1
 				continue
-			"""
-			splitted_line = list(filter(None, re.split(" |\t|\n|;.*\n|=", line)))
-			if ("set" in splitted_line):
-				idx = splitted_line.index("set")
-				splitted_line = splitted_line[idx+1:]
-				#print("!!!!", splitted_line)
-				if (len(splitted_line) > 0 and ("." in splitted_line[0])):
-					#syntax1_count += 1
-					destinations_list.append(splitted_line[0])
-				#set_count += 1
-				continue
-			"""
 
 			if (match2):
 				line = line[line.find("set")+3:]	# remove all the initial part
 				line = list(filter(None, re.split(" |\t|\n|;.*\n|=", line)))
 				if (len(line) > 0 and ("." in line[0])):		# the second check is to avoid things like "set int{}" or "set float{}"
-					#syntax1_count += 1
 					destinations_list.append(line[0])
-				#set_count += 1
 				continue
 			
 			if (match3):
 				line = line[line.find("!include")+len("!include"):]	# remove all the initial part
 				line = list(filter(None, re.split(" |\t|\n|;.*\n|=", line)))
 				if (len(line) > 0):
-					#syntax2_count += 1
 					destinations_list.append(line[0])
 				continue
 
 		f.close()
-		#print(nodeFullname, ptr_count, set_count, syntax1_count + syntax2_count)
 
 		destinations_list_rpa = []
 		for dest in destinations_list:

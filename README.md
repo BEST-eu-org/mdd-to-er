@@ -32,4 +32,4 @@ Source the virual environment (if not done already):
 
 Run the script to generate the drawing code:
 
-`python mdd2er.py <path-to-mdds>`
+`python mdd2er.py <path-to-mdds-directory> [depth-limit (default=10)]`

@@ -1,5 +1,6 @@
 import os
 import ntpath
+from pathlib import Path
 import re
 from parser import Parser
 import sys
@@ -12,25 +13,44 @@ import sys
 ###########################################################################################################
 
 
-if (len(sys.argv) != 2):
+if (len(sys.argv) < 2):
 	print("Syntax to be used:")
-	print("  python mdd2er.py <path-to-mdds-directory>")
+	print("  python mdd2er.py <path-to-mdds-directory> [depth-limit (default=10)]")
 	print(" ")
 	exit()
+
+
 
 # PARAMETERS -------------------------------------------------
 
 # root of the tree to analyze (relative or absolute path)
-BASE_PATH = sys.argv[1] #"../../best/graphMaker/testmdds"
+MDDS_PATH = sys.argv[1] #"../../best/graphMaker/testmdds"
+
+OUTPUT_PATH = "./output/"
+
 # file where to write the generated code
-OUT_FILENAME = 'codeGenerated.py'
+OUTPUT_SCRIPT = 'codeGenerated.py'
+
+# depth limit in the graph
+if (len(sys.argv) == 3):
+	depth_limit = int(sys.argv[2])
+	if (depth_limit < 1):
+		print("Depth limit should be an integer >= 1")
+		exit()
+else:
+	depth_limit = 10
+
+OUTPUT_GRAPH = "graph_d" + str(depth_limit) + ".gv"
 
 #-------------------------------------------------------------
 
-# open in append mode
-f = open("./"+OUT_FILENAME, 'a')
+# create output directory if it does not exist
+Path(OUTPUT_PATH).mkdir(parents=True, exist_ok=True)
 
-p = Parser(BASE_PATH, f)
+# open in append mode
+f = open(OUTPUT_SCRIPT, 'a')
+
+p = Parser(MDDS_PATH, f, depth_limit)
 
 # clear file
 f.truncate(0)
@@ -38,7 +58,7 @@ f.truncate(0)
 # write first lines
 f.write("from graphviz import Digraph\n")
 f.write("\n")
-f.write(p.getGraphName()+" = Digraph('G', filename='graph.gv')\n")
+f.write(p.getGraphName()+" = Digraph('G', filename='"+OUTPUT_PATH+OUTPUT_GRAPH+"')\n")
 f.write(p.getGraphName()+".attr(compound='true')\n")
 
 
