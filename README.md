@@ -6,6 +6,7 @@ A tool to extract an Entity-Relationship (ER) diagram from Makumba Data Definiti
 
 ### Requirements
 
+- Unix operative system
 - Python 3
 - Virtualenv package
 
@@ -31,8 +32,4 @@ Source the virual environment (if not done already):
 
 Run the script to generate the drawing code:
 
-`python codeGenerator.py`
-
-Run the drawing code:
-
-`python codeGenerated.py`
+`python mdd2er.py <path-to-mdds>`

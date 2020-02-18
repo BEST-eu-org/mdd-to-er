@@ -2,6 +2,7 @@ import os
 import ntpath
 import re
 from parser import Parser
+import sys
 
 ###########################################################################################################
 ## This script analyzes the subfolder and file structure of the Data Definition folder, that should
@@ -10,10 +11,17 @@ from parser import Parser
 ## foreign key relation (as arrows going from a node to its foreign keys).
 ###########################################################################################################
 
+
+if (len(sys.argv) != 1):
+	print("Syntax to be used:")
+	print("  python mdd2er.py <path-to-mdds-directory>")
+	print(" ")
+	exit()
+
 # PARAMETERS -------------------------------------------------
 
 # root of the tree to analyze (relative or absolute path)
-BASE_PATH = "../../best/graphMaker/testmdds"
+BASE_PATH = sys.argv[1] #"../../best/graphMaker/testmdds"
 # file where to write the generated code
 OUT_FILENAME = 'codeGenerated.py'
 
@@ -44,3 +52,5 @@ f.write(p.getGraphName()+".view()\n")
 
 f.close()
 
+# run the drawing script
+import codeGenerated
