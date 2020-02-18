@@ -6,12 +6,12 @@ Here is presented a mock database schema, with some generic company, archive and
 
 Run the following lines:
 
-`
+```
 python mdd2er.py ./examples/dataDefinitions/ 1
 python mdd2er.py ./examples/dataDefinitions/ 2
 python mdd2er.py ./examples/dataDefinitions/ 3
 python mdd2er.py ./examples/dataDefinitions/
-`
+```
 
 The results are saved as PDF files.
 
