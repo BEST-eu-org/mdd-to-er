@@ -12,7 +12,7 @@ import sys
 ###########################################################################################################
 
 
-if (len(sys.argv) != 1):
+if (len(sys.argv) != 2):
 	print("Syntax to be used:")
 	print("  python mdd2er.py <path-to-mdds-directory>")
 	print(" ")
